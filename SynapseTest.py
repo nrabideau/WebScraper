@@ -1,12 +1,14 @@
 import csv
 import os.path
 from os import path
+import BusinessMapInfo
 
 def main():
     filename = 'crunch_bases_view.csv'
     deleteoldtextFile()
     importCSV(filename)
-
+    addaddressField(filename)
+    
 def importCSV(filename):
     names = ['id','created_at','updated_at','business_profile_id','business_profile_created','business_profile_updated','logo_import_status','name','url' ,'categories','description',
                'headquarters_location','cb_rank','investor_type','investment_stage','number_of_employees','number_of_funding_rounds','funding_status','last_funding_date','last_funding_amount',
@@ -33,14 +35,18 @@ def importCSV(filename):
         print("There are %d Nulls in the file" %(NULL_count))
         print("File Created" )
 
+def addaddressField(filename):
+#This function will allow us to populate address, and lat/long
+     print(BusinessMapInfo.getAddress('Taco Bell','Largo'))#First param will be company name followed by location
+         
+          
 def deleteoldtextFile():
-
+#Delete the old text file, so we can create a new one
  if (path.exists("missingentries.txt")):
         os.remove("missingentries.txt")
 
 def createtextFile(businessName, location, missingValue):
    
-
     missingentries = open("missingentries.txt","a+")
     missingentries.write(businessName + " " + location + " Missing :" + missingValue +"\n" )#format proper
 
