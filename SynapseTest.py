@@ -1,13 +1,13 @@
 import csv
 import os.path
-from os import path
 import BusinessMapInfo
+import pandas as pd
+from os import path
 
 def main():
     filename = 'crunch_bases_view.csv'
-    deleteoldtextFile()
+    deletetempFiles()
     importCSV(filename)
-    addaddressField(filename)
     
 def importCSV(filename):
     names = ['id','created_at','updated_at','business_profile_id','business_profile_created','business_profile_updated','logo_import_status','name','url' ,'categories','description',
@@ -20,37 +20,52 @@ def importCSV(filename):
         csv_reader = csv.reader(csv_file, delimiter=',', skipinitialspace=True)
         col_Count = 26
 
-        
         for row in csv_reader:
             line_count +=1
+
+            createmaplistCSV(row[7],row[11])
+            
             for i in range(col_Count):    #Put into seperate function task.
                 if row[i] == "NULL": 
                     businessName = row[7] #Location of row where business name is, we can change later to make this dynamic
                     location = row[11]    #Where the business is located.
                     missingValue = names[i]
-                    createtextFile(businessName, location, missingValue)
+                    createmissingCSV(businessName, location, missingValue)
                     NULL_count +=1
+       
 
         print("There are %d lines in the file" %(line_count))
         print("There are %d Nulls in the file" %(NULL_count))
         print("File Created" )
 
-def addaddressField(filename):
+def getaddressField(companyName,location):
 #This function will allow us to populate address, and lat/long
-     print(BusinessMapInfo.getAddress('Taco Bell','Largo'))#First param will be company name followed by location
+     return(BusinessMapInfo.getAddress(companyName,location))#First param will be company name followed by location
          
           
-def deleteoldtextFile():
+def deletetempFiles():
 #Delete the old text file, so we can create a new one
- if (path.exists("missingentries.txt")):
-        os.remove("missingentries.txt")
-
-def createtextFile(businessName, location, missingValue):
-   
-    missingentries = open("missingentries.txt","a+")
-    missingentries.write(businessName + " " + location + " Missing :" + missingValue +"\n" )#format proper
+ if (path.exists("missingentries.csv")):
+        os.remove("missingentries.csv")
+ if (path.exists("mapdata.csv")):
+        os.remove("mapdata.csv")
 
 
+def createmissingCSV(businessName, location, missingValue):
+    missingentries = open("missingentries.csv","a+")
+    missingentries.write('"' + businessName + '",' + '"' + location + '",' + '"' + missingValue + '"\n' )#format proper
+#Output will be the company and map information.
 
+def createmaplistCSV(businessName,location):
+    locationData = getaddressField(businessName,location)
+    mapdata = open("mapdata.csv","a+")
+    if (locationData):
+        print("found:" + businessName)
+        mapdata.write('"' + businessName + '",' + '"' + location + '",' + '"' + str(locationData) + '"\n' )#format proper
+    else:
+        mapdata.write('"' + businessName + '",' + '"' + location + '",' + '"' + "NONE" + '"\n' )#format proper
+
+  
+    
 if __name__== "__main__":
   main()
