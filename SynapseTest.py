@@ -50,7 +50,10 @@ def getaddressField(companyName, location):
     # First param will be company name followed by location
     return(BusinessMapInfo.getAddress(companyName, location))
 
-
+def getadditionalInfo(ID):
+    #Function returns more data based on ID
+    return (BusinessMapInfo.getadditionalInfo(ID))
+    
 def deletetempFiles():
     # Delete the old text file, so we can create a new one
     if (path.exists("missingentries.csv")):
@@ -61,8 +64,8 @@ def deletetempFiles():
 
 def createmissingCSV(businessName, location, missingTemp):
     missingentries = open("missingentries.csv", "a+")
-    missingentries.write('"' + businessName + '",' + '"' + location +
-                         '",')  # format proper
+    missingentries.write('"' + businessName + '",' + '"' +
+                         location + '",')  # format proper
     for i in range(0, len(missingTemp)):
         missingentries.write('"')
         missingentries.write(missingTemp[i])
@@ -78,12 +81,31 @@ def createmaplistCSV(businessName, location):
     locationData = getaddressField(businessName, location)
     mapdata = open("mapdata.csv", "a+")
     if (locationData['status'] == 'OK'):
+        placeid = str(locationData['candidates'][0]['place_id'])
+        #openingHours = str(locationData['candidates'][0]['opening_hours'])
+        address = str(locationData['candidates'][0]['formatted_address'])
+        #Gets more info like phone number and website 
+        additionalInfo = getadditionalInfo(placeid)
+        try:
+            phoneNumber = additionalInfo['result']['formatted_phone_number']
+
+        except KeyError:
+            phoneNumber = "NULL"
+
+        try:
+            website = additionalInfo['result']['website']
+
+        except KeyError:
+            website = "NULL"
+
         print("found:" + businessName)
-        mapdata.write('"' + businessName + '",' + '"' + location +
-                      '",' + '"' + str(locationData['candidates'][0]['formatted_address']) + '"\n')  # format proper
+        mapdata.write('"' + businessName + '",' + '"' + location + '",' + '"' + address +'","' + phoneNumber + '","' + website + '"\n')  # format proper
+
+        
+
+        
     else:
-        mapdata.write('"' + businessName + '",' + '"' + location +
-                      '",' + '"' + "NONE" + '"\n')  # format proper
+        mapdata.write('"' + businessName + '",' + '"' + location + '",' + '"' + "NULL" + '"\n')  # format proper
 
 
 if __name__ == "__main__":
