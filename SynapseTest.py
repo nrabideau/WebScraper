@@ -77,10 +77,10 @@ def createmissingCSV(businessName, location, missingTemp):
 def createmaplistCSV(businessName, location):
     locationData = getaddressField(businessName, location)
     mapdata = open("mapdata.csv", "a+")
-    if (locationData):
+    if (locationData['status'] == 'OK'):
         print("found:" + businessName)
         mapdata.write('"' + businessName + '",' + '"' + location +
-                      '",' + '"' + str(locationData) + '"\n')  # format proper
+                      '",' + '"' + str(locationData['candidates'][0]['formatted_address']) + '"\n')  # format proper
     else:
         mapdata.write('"' + businessName + '",' + '"' + location +
                       '",' + '"' + "NONE" + '"\n')  # format proper
