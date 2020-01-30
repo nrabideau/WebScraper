@@ -68,7 +68,7 @@ def createmissingCSV(businessName, location, missingTemp):
         missingentries.write(missingTemp[i])
         missingentries.write('",')
 
-    missingentries.write('\n\n')
+    missingentries.write('\n')
 
 
 # Output will be the company and map information.
