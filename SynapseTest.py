@@ -95,21 +95,13 @@ def createmaplistCSV(businessName, location):
     mapdata = open("mapdata.csv", "a+")
     if (locationData['status'] == 'OK'):
         placeid = str(locationData['candidates'][0]['place_id'])
-        #openingHours = str(locationData['candidates'][0]['opening_hours'])
+        # openingHours = str(locationData['candidates'][0]['opening_hours'])
         address = str(locationData['candidates'][0]['formatted_address'])
         # Gets more info like phone number and website
         additionalInfo = getadditionalInfo(placeid)
-        try:
-            phoneNumber = additionalInfo['result']['formatted_phone_number']
 
-        except KeyError:
-            phoneNumber = "NULL"
-
-        try:
-            website = additionalInfo['result']['website']
-
-        except KeyError:
-            website = "NULL"
+        phoneNumber = getPhoneNumber(additionalInfo)
+        website = getWebsite(additionalInfo)
 
         print("found:" + businessName)
         mapdata.write('"' + businessName + '",' + '"' + location + '",' + '"' +
@@ -117,7 +109,23 @@ def createmaplistCSV(businessName, location):
 
     else:
         mapdata.write('"' + businessName + '",' + '"' + location +
-                      '",' + '"' + "NULL" + '"\n')  # format proper
+                      '",' + '"' + ' "NULL , NULL , NULL \n"')  # format proper
+
+
+def getPhoneNumber(additionalInfo):
+    try:
+        return(additionalInfo['result']['formatted_phone_number'])
+
+    except KeyError:
+        return("NULL")
+
+
+def getWebsite(additionalInfo):
+    try:
+        return(additionalInfo['result']['website'])
+
+    except KeyError:
+        return("NULL")
 
 
 if __name__ == "__main__":
