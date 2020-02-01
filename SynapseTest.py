@@ -12,21 +12,21 @@ def main():
 
 
 def importCSV(filename):
-    names = ['id', 'created_at', 'updated_at', 'business_profile_id', 'business_profile_created', 'business_profile_updated', 'logo_import_status', 'name', 'url', 'categories', 'description',
-             'headquarters_location', 'cb_rank', 'investor_type', 'investment_stage', 'number_of_employees', 'number_of_funding_rounds', 'funding_status', 'last_funding_date', 'last_funding_amount',
-             'last_funding_type', 'total_funding_amount', 'number_of_lead_investors', 'number_of_investors', 'acquisition_status', 'operating_status']
+    names = []
     missingTemp = []
     print("WORKING....")
     with open(filename) as csv_file:
         line_count = 0
         NULL_count = 0
         csv_reader = csv.reader(csv_file, delimiter=',', skipinitialspace=True)
-        # col_Count = 26
+
+        names = csv_reader.__next__()  # grabs all of the values from the first row
 
         for row in csv_reader:
             line_count += 1
             missingTemp.clear()
             createmaplistCSV(row[7], row[11])
+
             if "NULL" in row:
                 # Put into seperate function task.
                 # Location of row where business name is, we can change later to make this dynamic
