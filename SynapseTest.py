@@ -8,6 +8,8 @@ from os import path
 def main():
     filename = 'crunch_bases_view.csv'
     deletetempFiles()
+    initMapListCSV()
+    initMissingEntriesCSV()
     importCSV(filename)
 
 
@@ -50,16 +52,23 @@ def getaddressField(companyName, location):
     # First param will be company name followed by location
     return(BusinessMapInfo.getAddress(companyName, location))
 
+
 def getadditionalInfo(ID):
-    #Function returns more data based on ID
+    # Function returns more data based on ID
     return (BusinessMapInfo.getadditionalInfo(ID))
-    
+
+
 def deletetempFiles():
     # Delete the old text file, so we can create a new one
     if (path.exists("missingentries.csv")):
         os.remove("missingentries.csv")
     if (path.exists("mapdata.csv")):
         os.remove("mapdata.csv")
+
+
+def initMissingEntriesCSV():
+    missingentries = open("missingentries.csv", "a+")
+    missingentries.write(' Name, Location, Missing \n')
 
 
 def createmissingCSV(businessName, location, missingTemp):
@@ -76,6 +85,10 @@ def createmissingCSV(businessName, location, missingTemp):
 
 # Output will be the company and map information.
 
+def initMapListCSV():
+    mapdata = open("mapdata.csv", "a+")
+    mapdata.write('Name, Headquarters, Address, Phone, Website\n')
+
 
 def createmaplistCSV(businessName, location):
     locationData = getaddressField(businessName, location)
@@ -84,7 +97,7 @@ def createmaplistCSV(businessName, location):
         placeid = str(locationData['candidates'][0]['place_id'])
         #openingHours = str(locationData['candidates'][0]['opening_hours'])
         address = str(locationData['candidates'][0]['formatted_address'])
-        #Gets more info like phone number and website 
+        # Gets more info like phone number and website
         additionalInfo = getadditionalInfo(placeid)
         try:
             phoneNumber = additionalInfo['result']['formatted_phone_number']
@@ -99,13 +112,12 @@ def createmaplistCSV(businessName, location):
             website = "NULL"
 
         print("found:" + businessName)
-        mapdata.write('"' + businessName + '",' + '"' + location + '",' + '"' + address +'","' + phoneNumber + '","' + website + '"\n')  # format proper
+        mapdata.write('"' + businessName + '",' + '"' + location + '",' + '"' +
+                      address + '","' + phoneNumber + '","' + website + '"\n')  # format proper
 
-        
-
-        
     else:
-        mapdata.write('"' + businessName + '",' + '"' + location + '",' + '"' + "NULL" + '"\n')  # format proper
+        mapdata.write('"' + businessName + '",' + '"' + location +
+                      '",' + '"' + "NULL" + '"\n')  # format proper
 
 
 if __name__ == "__main__":
