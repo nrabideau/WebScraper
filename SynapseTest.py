@@ -10,14 +10,7 @@ def main():
     deletetempFiles()
     initMapListCSV()
     initMissingEntriesCSV()
-    importCSV(filename)
-
-def getKey(keyName):
-    with open (keys.yaml) as keyfile:
-        data = yaml.safe_load(keyfile)
-        print(data)
-
-	
+    importCSV(filename)	
 
 def importCSV(filename):
     names = []
