@@ -22,6 +22,8 @@ def getKey(keyName):
 def importCSV(filename):
     names = []
     missingTemp = []
+    mapsTemp = []
+
     print("WORKING....")
     with open(filename) as csv_file:
         line_count = 0
@@ -33,7 +35,7 @@ def importCSV(filename):
         for row in csv_reader:
             line_count += 1
             missingTemp.clear()
-            createmaplistCSV(row[7], row[11])
+            createmaplistCSV(row[7], row[11], mapsTemp)
 
             if "NULL" in row:
                 # Put into seperate function task.
@@ -96,7 +98,8 @@ def initMapListCSV():
     mapdata.write('Name, Headquarters, Address, Phone, Website\n')
 
 
-def createmaplistCSV(businessName, location):
+def createmaplistCSV(businessName, location, mapsTemp):
+    mapsTemp.clear()
     locationData = getaddressField(businessName, location)
     mapdata = open("mapdata.csv", "a+")
     if (locationData['status'] == 'OK'):
@@ -109,14 +112,23 @@ def createmaplistCSV(businessName, location):
         phoneNumber = getPhoneNumber(additionalInfo)
         website = getWebsite(additionalInfo)
 
-        print("found:" + businessName)
-        mapdata.write('"' + businessName + '",' + '"' + location + '",' + '"' +
-                      address + '","' + phoneNumber + '","' + website + '"\n')  # format proper
+        mapsTemp.append(businessName)
+        mapsTemp.append(location)
+        mapsTemp.append(address)
+        mapsTemp.append(phoneNumber)
+        mapsTemp.append(website)
 
+        print("found:" + businessName)
+       
+        for i in range(len(mapsTemp)):
+            mapdata.write('"')
+            mapdata.write(mapsTemp[i])
+            mapdata.write('",')
+        
+        mapdata.write('\n')
     else:
         mapdata.write('"' + businessName + '",' + '"' + location +
                       '",'  + ' NULL , NULL , NULL \n')  # format proper
-
 
 def getPhoneNumber(additionalInfo):
     try:
