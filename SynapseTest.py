@@ -12,7 +12,8 @@ def main():
     deletetempFiles()
     initMapListCSV()
     initMissingEntriesCSV()
-    importCSV(filename)	
+    importCSV(filename)
+
 
 def createtempFile():
     path = os.getcwd()
@@ -20,13 +21,14 @@ def createtempFile():
     try:
         os.mkdir(path + "/tempoutputCSV")
     except OSError:
-        print ("Creation of the directory %s exists" % path)
+        print("Creation of the directory %s exists" % path)
     else:
-        print ("Successfully created the directory %s " % path)
+        print("Successfully created the directory %s " % path)
+
 
 def getCSVfolderPath():
-    return (os.getcwd() +  "/tempoutputCSV/")
-    
+    return (os.getcwd() + "/tempoutputCSV/")
+
 
 def importCSV(filename):
     names = []
@@ -95,7 +97,9 @@ def createmissingCSV(businessName, location, missingTemp):
     for i in range(0, len(missingTemp)):
         missingentries.write('"')
         missingentries.write(missingTemp[i])
-        missingentries.write('",')
+
+        if i < len(missingTemp) - 1:
+            missingentries.write('",')
 
     missingentries.write('\n')
 
@@ -128,16 +132,18 @@ def createmaplistCSV(businessName, location, mapsTemp):
         mapsTemp.append(website)
 
         print("found:" + businessName)
-       
+
         for i in range(len(mapsTemp)):
             mapdata.write('"')
             mapdata.write(mapsTemp[i])
-            mapdata.write('",')
-        
+            if i < len(mapsTemp) - 1:
+                mapdata.write('",')
+
         mapdata.write('\n')
     else:
         mapdata.write('"' + businessName + '",' + '"' + location +
-                      '",'  + ' NULL , NULL , NULL \n')  # format proper
+                      '",' + ' NULL , NULL , NULL \n')  # format proper
+
 
 def getPhoneNumber(additionalInfo):
     try:
