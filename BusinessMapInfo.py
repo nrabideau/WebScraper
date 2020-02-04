@@ -1,7 +1,9 @@
 import googlemaps
 from datetime import datetime
 import json
-key='Secret'
+import keyfile
+#Key to get goolemaps data
+key = (keyfile.getKey('googlemaps'))
 
 def getAddress(company_name, location): #Location here will give us the general location of the business. 
     #Place your API key here

@@ -12,11 +12,18 @@ def main():
     initMissingEntriesCSV()
     importCSV(filename)
 
+def getKey(keyName):
+    with open (keys.yaml) as keyfile:
+        data = yaml.safe_load(keyfile)
+        print(data)
+
+	
 
 def importCSV(filename):
     names = []
     missingTemp = []
     mapsTemp = []
+
     print("WORKING....")
     with open(filename) as csv_file:
         line_count = 0
@@ -122,7 +129,6 @@ def createmaplistCSV(businessName, location, mapsTemp):
     else:
         mapdata.write('"' + businessName + '",' + '"' + location +
                       '",'  + ' NULL , NULL , NULL \n')  # format proper
-
 
 def getPhoneNumber(additionalInfo):
     try:
