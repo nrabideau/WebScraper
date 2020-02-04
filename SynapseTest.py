@@ -109,7 +109,7 @@ def createmaplistCSV(businessName, location):
 
     else:
         mapdata.write('"' + businessName + '",' + '"' + location +
-                      '",' + '"' + ' "NULL , NULL , NULL \n"')  # format proper
+                      '",' + '"' + ' "NULL , NULL , NULL \n')  # format proper
 
 
 def getPhoneNumber(additionalInfo):
