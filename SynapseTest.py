@@ -1,4 +1,5 @@
 import csv
+import os
 import os.path
 import BusinessMapInfo
 import pandas as pd
@@ -6,11 +7,26 @@ from os import path
 
 
 def main():
+    createtempFile()
     filename = 'crunch_bases_view.csv'
     deletetempFiles()
     initMapListCSV()
     initMissingEntriesCSV()
     importCSV(filename)	
+
+def createtempFile():
+    path = os.getcwd()
+    print(path)
+    try:
+        os.mkdir(path + "/tempoutputCSV")
+    except OSError:
+        print ("Creation of the directory %s exists" % path)
+    else:
+        print ("Successfully created the directory %s " % path)
+
+def getCSVfolderPath():
+    return (os.getcwd() +  "/tempoutputCSV/")
+    
 
 def importCSV(filename):
     names = []
@@ -61,19 +77,19 @@ def getadditionalInfo(ID):
 
 def deletetempFiles():
     # Delete the old text file, so we can create a new one
-    if (path.exists("missingentries.csv")):
-        os.remove("missingentries.csv")
-    if (path.exists("mapdata.csv")):
-        os.remove("mapdata.csv")
+    if (path.exists(getCSVfolderPath() + "missingentries.csv")):
+        os.remove(getCSVfolderPath() + "missingentries.csv")
+    if (path.exists(getCSVfolderPath() + "mapdata.csv")):
+        os.remove(getCSVfolderPath() + "mapdata.csv")
 
 
 def initMissingEntriesCSV():
-    missingentries = open("missingentries.csv", "a+")
+    missingentries = open(getCSVfolderPath() + "missingentries.csv", "a+")
     missingentries.write(' Name, Location, Missing \n')
 
 
 def createmissingCSV(businessName, location, missingTemp):
-    missingentries = open("missingentries.csv", "a+")
+    missingentries = open(getCSVfolderPath() + "missingentries.csv", "a+")
     missingentries.write('"' + businessName + '",' + '"' +
                          location + '",')  # format proper
     for i in range(0, len(missingTemp)):
@@ -87,14 +103,14 @@ def createmissingCSV(businessName, location, missingTemp):
 # Output will be the company and map information.
 
 def initMapListCSV():
-    mapdata = open("mapdata.csv", "a+")
+    mapdata = open(getCSVfolderPath() + "mapdata.csv", "a+")
     mapdata.write('Name, Headquarters, Address, Phone, Website\n')
 
 
 def createmaplistCSV(businessName, location, mapsTemp):
     mapsTemp.clear()
     locationData = getaddressField(businessName, location)
-    mapdata = open("mapdata.csv", "a+")
+    mapdata = open(getCSVfolderPath() + "mapdata.csv", "a+")
     if (locationData['status'] == 'OK'):
         placeid = str(locationData['candidates'][0]['place_id'])
         # openingHours = str(locationData['candidates'][0]['opening_hours'])
