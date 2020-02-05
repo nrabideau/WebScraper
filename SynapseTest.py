@@ -109,7 +109,7 @@ def createmissingCSV(businessName, location, missingTemp):
 
 def initMapListCSV():
     mapdata = open(getCSVfolderPath() + "mapdata.csv", "a+")
-    mapdata.write('Name, Headquarters, Address, Phone, Website\n')
+    mapdata.write('Name, Headquarters, Address, LAT/LONG,Phone, Website\n')
 
 
 def createmaplistCSV(businessName, location, mapsTemp):
@@ -121,6 +121,7 @@ def createmaplistCSV(businessName, location, mapsTemp):
         # openingHours = str(locationData['candidates'][0]['opening_hours'])
         address = str(locationData['candidates'][0]['formatted_address'])
         # Gets more info like phone number and website
+        geometry = str(locationData['candidates'][0]['geometry'])
         additionalInfo = getadditionalInfo(placeid)
 
         phoneNumber = getPhoneNumber(additionalInfo)
@@ -129,6 +130,7 @@ def createmaplistCSV(businessName, location, mapsTemp):
         mapsTemp.append(businessName)
         mapsTemp.append(location)
         mapsTemp.append(address)
+        mapsTemp.append(geometry)
         mapsTemp.append(phoneNumber)
         mapsTemp.append(website)
 
