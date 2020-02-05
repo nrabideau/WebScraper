@@ -114,8 +114,9 @@ def initMapListCSV():
 
 def createmaplistCSV(businessName, location, mapsTemp):
     mapsTemp.clear()
-    locationData = getaddressField(businessName, location)
     mapdata = open(getCSVfolderPath() + "mapdata.csv", "a+")
+    locationData = getaddressField(businessName, location)
+    
     if (locationData['status'] == 'OK'):
         placeid = str(locationData['candidates'][0]['place_id'])
         # openingHours = str(locationData['candidates'][0]['opening_hours'])
@@ -144,10 +145,13 @@ def createmaplistCSV(businessName, location, mapsTemp):
                 mapdata.write(',')
 
         mapdata.write('\n')
-    else:
-        mapdata.write('"' + businessName + '",' + '"' + location +
-                      '",' + ' NULL , NULL , NULL \n')  # format proper
-
+    
+    
+    elif (locationData['status'] == 'ZERO_RESULTS'):
+            mapdata.write('"' + businessName + '",' + '"' + location + '",' + ' NULL , NULL , NULL \n')  # format proper
+   
+    else :
+            print("GMAP ERROR RETRY...")
 
 def getPhoneNumber(additionalInfo):
     try:
