@@ -97,9 +97,10 @@ def createmissingCSV(businessName, location, missingTemp):
     for i in range(0, len(missingTemp)):
         missingentries.write('"')
         missingentries.write(missingTemp[i])
+        missingentries.write('"')
 
         if i < len(missingTemp) - 1:
-            missingentries.write('",')
+            missingentries.write(',')
 
     missingentries.write('\n')
 
@@ -136,8 +137,9 @@ def createmaplistCSV(businessName, location, mapsTemp):
         for i in range(len(mapsTemp)):
             mapdata.write('"')
             mapdata.write(mapsTemp[i])
+            mapdata.write('"')
             if i < len(mapsTemp) - 1:
-                mapdata.write('",')
+                mapdata.write(',')
 
         mapdata.write('\n')
     else:
