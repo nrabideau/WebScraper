@@ -12,7 +12,7 @@ def getAddress(company_name, location):
 
     # We make the location bias only FL since that is our scope here.
     result_list = gmaps.find_place(company_name+location, 'textquery', fields=[
-                                   'formatted_address', 'place_id', 'geometry/location', 'permanently_closed'], location_bias='rectangle:31.16816,-88.79009|25.02837,-79.40776')
+                                   'formatted_address', 'place_id', 'geometry/location'], location_bias='rectangle:31.16816,-88.79009|25.02837,-79.40776')
 
     # Now we can return the address , place id (Used to do another API call for more information),Geometry is LAT/LONG
 
