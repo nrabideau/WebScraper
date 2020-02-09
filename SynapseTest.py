@@ -195,7 +195,7 @@ def createmaplistCSV(businessName, location, mapsTemp):
     # This means the company was not found
     elif (locationData['status'] == 'ZERO_RESULTS'):
         mapdata.write('"' + businessName + '",' + '"' + location +
-                      '",' + ' NULL , NULL , NULL , NULL \n')  # format proper
+                      '",' + '  \n')  # format proper
 
     else:  # Some kind of other error occured.
         print("GMAP ERROR RETRY...")
@@ -206,7 +206,7 @@ def getPhoneNumber(additionalInfo):
         return(additionalInfo['result']['formatted_phone_number'])
 
     except KeyError:
-        return("NULL")
+        return("")
 
 
 def getWebsite(additionalInfo):
@@ -214,7 +214,7 @@ def getWebsite(additionalInfo):
         return(additionalInfo['result']['website'])
 
     except KeyError:
-        return("NULL")
+        return("")
 
 
 if __name__ == "__main__":
