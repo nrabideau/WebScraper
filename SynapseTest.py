@@ -3,7 +3,7 @@ import os
 import os.path
 import BusinessMapInfo
 import datetime
-import pandas as pd  # Used
+import pandas as pd  # Used for csv editing
 from os import path
 
 
