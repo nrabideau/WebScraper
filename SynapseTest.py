@@ -64,6 +64,11 @@ def importCSV(filename):
             # current date in YYYY-MM-DD format
             scanTime = datetime.date.today()
 
+            # sets crated_at with current date if this is the first scan
+            if row[1] == "":
+                print("First time scan on: " + scanTime)
+                df.loc[df['id'] == line_count, ['created_at']] = scanTime
+
             # if 'updated_at' is not blank
             if row[2] != "":
                 # last time this company was scanned
