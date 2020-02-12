@@ -3,7 +3,7 @@ import os
 import os.path
 import BusinessMapInfo
 import datetime
-import pandas as pd  # Used
+import pandas as pd  # Used for csv editing
 from os import path
 
 
@@ -61,44 +61,59 @@ def importCSV(filename):
             # We need row[7] AKA company name and row[11] AKA location
             # Reccomend chaning this incase crunchabase pull changes row locations / rows added.
 
-            # current date in YYYY-MM-DD format
-            scanTime = datetime.date.today()
-
-            # if 'updated_at' is not blank
-            if row[2] != "":
-                # last time this company was scanned
-                oldTime = datetime.datetime.strptime(row[2], '%Y-%m-%d').date()
-                # todays date - last scan date
-                lastUpdate = scanTime-oldTime
-
-            # if 'updated_at' is blank or is over 30 days old
-            if(row[2] == "" or (lastUpdate > datetime.timedelta(days=30))):
-                createmaplistCSV(row[7], row[11], mapsTemp)
-
-                df.loc[df['id'] == line_count, ['updated_at']] = scanTime
-                df.to_csv(filename, index=False)
-
-                if "" in row:
-                    # Put into seperate function task.
-                    # Location of row where business name is, we can change later to make this dynamic
-                    businessName = row[7]
-                    location = row[11]  # Where the business is located.
-                    # This loop creates a log of all the missing values we can find later
-                    for i in range(13, 25):
-                        if row[i] == "":
-                            NULL_count += 1
-                            missingTemp.append(names[i])
-                            if i == 24:
-                                createmissingCSV(
-                                    businessName, location, missingTemp)
-
-            # if 'updated_at' is not blank and is not 30 days old
-            elif(row[2] != "" and (lastUpdate < datetime.timedelta(days=30))):
-                print("Skipping " + row[7] + ", last updated on " + row[2])
+            checkDate(names, mapsTemp, missingTemp, filename, row, df, line_count,
+                      NULL_count)
 
         print("There are %d lines in the file" % (line_count))
         print("There are %d Nulls in the file" % (NULL_count))
         print("File Created")
+
+
+def checkDate(names, mapsTemp, missingTemp, filename, row, df, line_count, NULL_count):
+    # current date in MM-DD-YYYY format
+    scanTime = datetime.date.today()
+
+    # sets crated_at with current date if this is the first scan
+    if row[1] == "":
+        print("First time scanning %s, scan on %s: " %
+              (str(row[7]), str(scanTime.strftime('%m/%d/%Y'))))
+
+        df.loc[df['id'] == line_count, ['created_at']
+               ] = scanTime.strftime('%m/%d/%Y')
+
+    # if 'updated_at' is not blank
+    if row[2] != "":
+        # last time this company was scanned
+        oldTime = datetime.datetime.strptime(row[2], '%m/%d/%Y').date()
+        # todays date - last scan date
+        lastUpdate = scanTime-oldTime
+
+    # if 'updated_at' is blank or is over 30 days old
+    if(row[2] == "" or (lastUpdate > datetime.timedelta(days=30))):
+        createmaplistCSV(row[7], row[11], mapsTemp)
+
+        df.loc[df['id'] == line_count, ['updated_at']
+               ] = scanTime.strftime('%m/%d/%Y')
+
+        df.to_csv(filename, index=False)
+
+        if "" in row:
+            # Put into seperate function task.
+            # Location of row where business name is, we can change later to make this dynamic
+            businessName = row[7]
+            location = row[11]  # Where the business is located.
+            # This loop creates a log of all the missing values we can find later
+            for i in range(13, 25):
+                if row[i] == "":
+                    NULL_count += 1
+                    missingTemp.append(names[i])
+                    if i == 24:
+                        createmissingCSV(
+                            businessName, location, missingTemp)
+
+    # if 'updated_at' is not blank and is not 30 days old
+    elif(row[2] != "" and (lastUpdate < datetime.timedelta(days=30))):
+        print("Skipping " + row[7] + ", last updated on " + row[2])
 
 
 def getaddressField(companyName, location):
@@ -181,7 +196,7 @@ def createmaplistCSV(businessName, location, mapsTemp):
         mapsTemp.append(phoneNumber)
         mapsTemp.append(website)
 
-        print("found:" + businessName)
+        print("Found %s on Google Maps:" % (businessName))
         # Properly format the Array into a CSV type.
         for i in range(len(mapsTemp)):
             mapdata.write('"')
@@ -195,7 +210,7 @@ def createmaplistCSV(businessName, location, mapsTemp):
     # This means the company was not found
     elif (locationData['status'] == 'ZERO_RESULTS'):
         mapdata.write('"' + businessName + '",' + '"' + location +
-                      '",' + ' NULL , NULL , NULL , NULL \n')  # format proper
+                      '",' + '  \n')  # format proper
 
     else:  # Some kind of other error occured.
         print("GMAP ERROR RETRY...")
@@ -206,7 +221,7 @@ def getPhoneNumber(additionalInfo):
         return(additionalInfo['result']['formatted_phone_number'])
 
     except KeyError:
-        return("NULL")
+        return("")
 
 
 def getWebsite(additionalInfo):
@@ -214,7 +229,7 @@ def getWebsite(additionalInfo):
         return(additionalInfo['result']['website'])
 
     except KeyError:
-        return("NULL")
+        return("")
 
 
 if __name__ == "__main__":
