@@ -17,6 +17,8 @@ def main():
     initMissingEntriesCSV()
     # Main working function
     importCSV(filename)
+	#Place Functions for more scrape data below...
+    cleanup()
 
 # Function that creates our temp file Directory, that will be used to merge with main CSV file.
 
@@ -38,8 +40,11 @@ def getCSVfolderPath():
     return (os.getcwd() + "/tempoutputCSV/")
 
 
-def importCSV(filename):
-    # Arrays to populate the temp files
+def importCSV(filename): 
+	#Test for GMAPS API key
+    if (createmaplistCSV("test","test",[]))==0:
+          return 0
+	 # Arrays to populate the temp files
     names = []
     missingTemp = []
     mapsTemp = []
@@ -70,7 +75,9 @@ def importCSV(filename):
 
 
 def checkDate(names, mapsTemp, missingTemp, filename, row, df, line_count, NULL_count):
-    # current date in MM-DD-YYYY format
+    
+
+	# current date in MM-DD-YYYY format
     scanTime = datetime.date.today()
 
     # sets crated_at with current date if this is the first scan
@@ -174,7 +181,12 @@ def initMapListCSV():
 def createmaplistCSV(businessName, location, mapsTemp):
     mapsTemp.clear()
     mapdata = open(getCSVfolderPath() + "mapdata.csv", "a+")
-    locationData = getaddressField(businessName, location)
+    try:
+        locationData = getaddressField(businessName, location)
+    except:
+        print("Skipping... Enter Proper API KEY for google maps...")
+        return 0;
+        
     # API call to google maps, if this check passes means that the company matches.
     if (locationData['status'] == 'OK'):
         # Grab the first canidate, since it will be the closest match.
@@ -231,6 +243,9 @@ def getWebsite(additionalInfo):
     except KeyError:
         return("")
 
+def cleanup():
+	print("Search Complete, cleaning up...")
+	#Add Cleanup logic deleting files, ETC...
 
 if __name__ == "__main__":
     main()
