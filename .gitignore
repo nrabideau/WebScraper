@@ -1,5 +1,10 @@
+# Files to ignore
 keys.yaml
-__pycache__
+
+# Folders to ignore
+__pycache__/
+tempoutputCSV/
+
+# File extensions to ignore
 .vscode
-BusinessMapInfo.pyc
-keyfile.pyc
+*.pyc
