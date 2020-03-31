@@ -186,6 +186,14 @@ def createmaplistCSV(businessName, location, mapsTemp):
     except:
         print("Skipping... Enter Proper API KEY for google maps...")
         return 0;
+
+    yelpResponse = getYelp(businessName, location)
+    if(isinstance(yelpResponse,str)):
+        print(yelpResponse)
+    elif (yelpResponse["total"] > 0):
+        print("Business found on Yelp")
+    elif(yelpResponse["total"] == 0):
+        print("Business not found on Yelp")
         
     # API call to google maps, if this check passes means that the company matches.
     if (locationData['status'] == 'OK'):
@@ -227,6 +235,11 @@ def createmaplistCSV(businessName, location, mapsTemp):
     else:  # Some kind of other error occured.
         print("GMAP ERROR RETRY...")
 
+def getYelp(company_name, location):
+    try:
+        return BusinessMapInfo.getYelpInfo(company_name, location)
+    except:
+        return "An exception occurred"
 
 def getPhoneNumber(additionalInfo):
     try:
