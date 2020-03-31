@@ -1,10 +1,13 @@
+import requests
 import googlemaps
+from yelp.client import Client
 from datetime import datetime
 import json
 import keyfile
 # Key to get goolemaps data. To change API key modify keys.yaml file
 key = (keyfile.getKey('googlemaps'))
-
+# Key to get yelp data.
+yelpKey = (keyfile.getKey('yelp'))
 
 # Location here will give us the general location of the business.
 def getAddress(company_name, location):
@@ -28,3 +31,12 @@ def getadditionalInfo(ID):
                               'formatted_phone_number', 'website', 'opening_hours'])
 
     return(result_list)
+
+def getYelpInfo(company_name, location):
+    payload = {"term":company_name, "location":location}
+    head = {"Authorization":yelpKey}
+    print(payload)
+    response = requests.get("https://api.yelp.com/v3/businesses/search", params=payload, headers=head)
+    rjson = response.json()
+    
+    return(rjson)
