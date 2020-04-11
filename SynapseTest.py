@@ -5,7 +5,7 @@ import BusinessMapInfo
 import datetime
 import pandas as pd  # Used for csv editing
 from os import path
-
+from difflib import SequenceMatcher #to compare strings
 
 def main():
     createtempFile()
@@ -187,13 +187,6 @@ def createmaplistCSV(businessName, location, mapsTemp):
         print("Skipping... Enter Proper API KEY for google maps...")
         return 0;
 
-    yelpResponse = getYelp(businessName, location)
-    if(isinstance(yelpResponse,str)):
-        print(yelpResponse)
-    elif (yelpResponse["total"] > 0):
-        print("Business found on Yelp")
-    elif(yelpResponse["total"] == 0):
-        print("Business not found on Yelp")
         
     # API call to google maps, if this check passes means that the company matches.
     if (locationData['status'] == 'OK'):
@@ -209,13 +202,28 @@ def createmaplistCSV(businessName, location, mapsTemp):
         website = getWebsite(additionalInfo)
         # Add all this new info to our array, which we use to populate map info.
         # Any additional info from a maps API call should go here.
+
+        print(phoneNumber)
+        if (phoneNumber != 'NULL' or phoneNumber != ""):
+            yelpResponse = BusinessMapInfo.getYelpInfo(phoneNumber)
+            
+            if (yelpResponse["total"] > 0):
+                if (comparison(locationData,businessName,yelpResponse)):
+                    print("Yelp data matches Google maps")
+                else:
+                    print("no match ON YELP")
+            else:
+                print("no match ON YELP")
+        else:
+            print("no match ON YELP")
+            
         mapsTemp.append(businessName)
         mapsTemp.append(location)
         mapsTemp.append(address)
         mapsTemp.append(geometry)
         mapsTemp.append(phoneNumber)
         mapsTemp.append(website)
-
+        
         print("Found %s on Google Maps:" % (businessName))
         # Properly format the Array into a CSV type.
         for i in range(len(mapsTemp)):
@@ -235,11 +243,23 @@ def createmaplistCSV(businessName, location, mapsTemp):
     else:  # Some kind of other error occured.
         print("GMAP ERROR RETRY...")
 
-def getYelp(company_name, location):
-    try:
-        return BusinessMapInfo.getYelpInfo(company_name, location)
-    except:
-        return "An exception occurred"
+def comparison(Gmaps,googlebusinessName,yelp):
+    
+    gmapAddress = str(Gmaps['candidates'][0]['formatted_address'])
+    yelpAddress = str(yelp["businesses"][0]["location"]["address1"])
+    gmapCompanyName = str(googlebusinessName)
+    yelpCompanyName = str(yelp["businesses"][0]["name"])
+
+    yelpAddresslength = len(yelpAddress) #address is formateed differently, than Gmaps
+    gmapAddress = gmapAddress[:yelpAddresslength] #next, we cut down the google map sting to correct length
+    
+    addressScore = SequenceMatcher(a=yelpAddress,b=gmapAddress).ratio()
+    nameScore = SequenceMatcher(a=yelpCompanyName,b=gmapCompanyName).ratio()
+    print("Comparing Yelp To GMAPS data")
+    if(addressScore > .75 and nameScore > .75):
+        return True
+    else:
+        return False
 
 def getPhoneNumber(additionalInfo):
     try:
