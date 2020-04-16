@@ -5,7 +5,8 @@ import BusinessMapInfo
 import datetime
 import pandas as pd  # Used for csv editing
 from os import path
-from difflib import SequenceMatcher #to compare strings
+from difflib import SequenceMatcher  # to compare strings
+
 
 def main():
     createtempFile()
@@ -17,7 +18,7 @@ def main():
     initMissingEntriesCSV()
     # Main working function
     importCSV(filename)
-	#Place Functions for more scrape data below...
+    # Place Functions for more scrape data below...
     cleanup()
 
 # Function that creates our temp file Directory, that will be used to merge with main CSV file.
@@ -40,11 +41,11 @@ def getCSVfolderPath():
     return (os.getcwd() + "/tempoutputCSV/")
 
 
-def importCSV(filename): 
-	#Test for GMAPS API key
-    if (createmaplistCSV("test","test",[]))==0:
-          return 0
-	 # Arrays to populate the temp files
+def importCSV(filename):
+    """ # Test for GMAPS API key
+    if (createmaplistCSV("test", "test", [])) == 0:
+        return 0 """
+    # Arrays to populate the temp files
     names = []
     missingTemp = []
     mapsTemp = []
@@ -75,14 +76,13 @@ def importCSV(filename):
 
 
 def checkDate(names, mapsTemp, missingTemp, filename, row, df, line_count, NULL_count):
-    
 
-	# current date in MM-DD-YYYY format
+    # current date in MM-DD-YYYY format
     scanTime = datetime.date.today()
 
     # sets crated_at with current date if this is the first scan
     if row[1] == "":
-        print("First time scanning %s, scan on %s: " %
+        print("\nFirst time scanning %s, scan on %s: " %
               (str(row[7]), str(scanTime.strftime('%m/%d/%Y'))))
 
         df.loc[df['id'] == line_count, ['created_at']
@@ -173,7 +173,7 @@ def createmissingCSV(businessName, location, missingTemp):
 def initMapListCSV():
     mapdata = open(getCSVfolderPath() + "mapdata.csv", "a+")
     mapdata.write(
-        'Name, Headquarters, Address, LAT/LONG,Phone, Website\n')
+        'Name, Headquarters, Address, LAT/LONG, Phone, Website, Yelp Match\n')
 
 # Populate the rest of the feilds with location informaion.
 
@@ -185,16 +185,14 @@ def createmaplistCSV(businessName, location, mapsTemp):
         locationData = getaddressField(businessName, location)
     except:
         print("Skipping... Enter Proper API KEY for google maps...")
-        return 0;
+        return 0
 
-        
     # API call to google maps, if this check passes means that the company matches.
     if (locationData['status'] == 'OK'):
         # Grab the first canidate, since it will be the closest match.
         placeid = str(locationData['candidates'][0]['place_id'])
         address = str(locationData['candidates'][0]['formatted_address'])
         geometry = str(locationData['candidates'][0]['geometry'])
-        # closed = str(locationData['candidates'][0]['permanently_closed'])
 
         # Make another API call to get additional info about the company.
         additionalInfo = getadditionalInfo(placeid)
@@ -203,28 +201,45 @@ def createmaplistCSV(businessName, location, mapsTemp):
         # Add all this new info to our array, which we use to populate map info.
         # Any additional info from a maps API call should go here.
 
-        print(phoneNumber)
-        if (phoneNumber != 'NULL' or phoneNumber != ""):
-            yelpResponse = BusinessMapInfo.getYelpInfo(phoneNumber)
-            
-            if (yelpResponse["total"] > 0):
-                if (comparison(locationData,businessName,yelpResponse)):
-                    print("Yelp data matches Google maps")
-                else:
-                    print("no match ON YELP")
-            else:
-                print("no match ON YELP")
-        else:
-            print("no match ON YELP")
-            
+        print("Found on Google Maps")
+
+        # print("Phone number: %s" % (phoneNumber))
+        # print("Company Address: %s" % (address))
+
         mapsTemp.append(businessName)
         mapsTemp.append(location)
         mapsTemp.append(address)
         mapsTemp.append(geometry)
         mapsTemp.append(phoneNumber)
         mapsTemp.append(website)
-        
-        print("Found %s on Google Maps:" % (businessName))
+
+        if (phoneNumber != 'NULL' or phoneNumber != ""):
+            # if (address != 'NULL' or address != ""):
+            # yelpResponse = BusinessMapInfo.getYelpInfo(businessName, location)
+            yelpResponse = BusinessMapInfo.getYelpInfo(phoneNumber)
+            """ print("Yelp response: ")
+            print(yelpResponse) """
+
+            if (yelpResponse["total"] > 0):
+                print("Comparing Yelp To GMAPS data")
+
+                yelpReturn = comparison(
+                    address, businessName, phoneNumber, yelpResponse)
+
+                if (len(yelpReturn) > 0):
+                    print("Yelp data matches Google maps\n")
+                    mapsTemp.append("true")
+                    """ for i in range(0, len(yelpReturn)):
+                        mapsTemp.append(yelpReturn[i]) """
+                else:
+                    mapsTemp.append("false")
+                    print("no match ON YELP")
+            else:
+                mapsTemp.append("false")
+                print("no match ON YELP")
+        else:
+            print("no match ON YELP")
+
         # Properly format the Array into a CSV type.
         for i in range(len(mapsTemp)):
             mapdata.write('"')
@@ -237,29 +252,44 @@ def createmaplistCSV(businessName, location, mapsTemp):
 
     # This means the company was not found
     elif (locationData['status'] == 'ZERO_RESULTS'):
+        print("No results on google maps")
         mapdata.write('"' + businessName + '",' + '"' + location +
                       '",' + '  \n')  # format proper
 
     else:  # Some kind of other error occured.
         print("GMAP ERROR RETRY...")
 
-def comparison(Gmaps,googlebusinessName,yelp):
-    
-    gmapAddress = str(Gmaps['candidates'][0]['formatted_address'])
-    yelpAddress = str(yelp["businesses"][0]["location"]["address1"])
-    gmapCompanyName = str(googlebusinessName)
-    yelpCompanyName = str(yelp["businesses"][0]["name"])
 
-    yelpAddresslength = len(yelpAddress) #address is formateed differently, than Gmaps
-    gmapAddress = gmapAddress[:yelpAddresslength] #next, we cut down the google map sting to correct length
-    
-    addressScore = SequenceMatcher(a=yelpAddress,b=gmapAddress).ratio()
-    nameScore = SequenceMatcher(a=yelpCompanyName,b=gmapCompanyName).ratio()
-    print("Comparing Yelp To GMAPS data")
-    if(addressScore > .75 and nameScore > .75):
-        return True
-    else:
-        return False
+def comparison(Gmaps, googlebusinessName, gmapPhone, yelp):
+
+    gmapAddress = Gmaps  # str(Gmaps['candidates'][0]['formatted_address'])
+    gmapCompanyName = str(googlebusinessName)
+
+    print("Comparing against %s, %s, %s\n" %
+          (gmapCompanyName, gmapAddress, gmapPhone))
+
+    for i in range(0, len(yelp["businesses"])):
+        yelpAddress = str(yelp["businesses"][i]["location"]
+                          ["display_address"])+", United States"
+        yelpCompanyName = str(yelp["businesses"][i]["name"])
+        yelpPhone = str(yelp["businesses"][i]["phone"])
+
+        print("Comparing: %s, %s, %s" %
+              (yelpCompanyName, yelpAddress, yelpPhone))
+        # address is formateed differently, than Gmaps
+        yelpAddresslength = len(yelpAddress)
+        # next, we cut down the google map sting to correct length
+        gmapAddress = gmapAddress[:yelpAddresslength]
+
+        addressScore = SequenceMatcher(a=yelpAddress, b=gmapAddress).ratio()
+        nameScore = SequenceMatcher(
+            a=yelpCompanyName, b=gmapCompanyName).ratio()
+        if(addressScore >= .75 and nameScore >= .75):
+            yelpReturn = [yelpCompanyName, yelpAddress, yelpPhone]
+            return yelpReturn
+    """ else:
+            return False """
+
 
 def getPhoneNumber(additionalInfo):
     try:
@@ -276,9 +306,11 @@ def getWebsite(additionalInfo):
     except KeyError:
         return("")
 
+
 def cleanup():
-	print("Search Complete, cleaning up...")
-	#Add Cleanup logic deleting files, ETC...
+    print("Search Complete, cleaning up...")
+    # Add Cleanup logic deleting files, ETC...
+
 
 if __name__ == "__main__":
     main()
