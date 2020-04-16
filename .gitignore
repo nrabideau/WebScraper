@@ -7,3 +7,4 @@ tempoutputCSV/
 # File extensions to ignore
 .vscode
 *.pyc
+*.csv

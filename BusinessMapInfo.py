@@ -10,6 +10,8 @@ key = (keyfile.getKey('googlemaps'))
 yelpKey = (keyfile.getKey('yelp'))
 
 # Location here will give us the general location of the business.
+
+
 def getAddress(company_name, location):
     gmaps = googlemaps.Client(key=key)
 
@@ -32,10 +34,16 @@ def getadditionalInfo(ID):
 
     return(result_list)
 
+
 def getYelpInfo(yelpPhone):
-    yelpPhone = re.sub('[!(@#$)+ -]', '', yelpPhone)#Remove all characters, so just number remains.
-    payload = {"phone":"+1"+yelpPhone}
-    head = {"Authorization":yelpKey}
-    response = requests.get("https://api.yelp.com/v3/businesses/search/phone", params=payload, headers=head)
+    # Remove all characters, so just number remains.
+    yelpPhone = re.sub('[!(@#$)+ -]', '', yelpPhone)
+    payload = {"phone": "+1"+yelpPhone}
+    #payload = {"term": term, "location": location}
+    print("Searching Yelp for phone#:")
+    print(payload["phone"])
+    head = {"Authorization": yelpKey}
+    response = requests.get(
+        "https://api.yelp.com/v3/businesses/search/phone", params=payload, headers=head)
     rjson = response.json()
     return(rjson)
