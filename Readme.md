@@ -1,8 +1,8 @@
-#Syanpse Connect Program 
+# Syanpse Connect Program 
 
-##Installation
+## Installation
 
-###Prerequsite Downloads
+### Prerequsite Downloads
 * [google maps](https://pypi.org/project/googlemaps/)
 * [PYYAML](https://pypi.org/project/PyYAML/)
 * [pandas](https://pypi.org/project/pandas/)
@@ -17,5 +17,5 @@
 2. Open the project, and select the import file (Should be Cunchbaseview.CSV)
 3. Click begin to start scraping the data!
 
-##Output
+## Output
 Coming Soon...
