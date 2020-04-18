@@ -8,8 +8,8 @@
 * [pandas](https://pypi.org/project/pandas/)
 
 ### API Keys Needed
-*[Google Maps Places](https://developers.google.com/places/web-service/get-api-key)
-*[YELP](https://www.yelp.com/developers)
+* [Google Maps Places](https://developers.google.com/places/web-service/get-api-key)
+* [YELP](https://www.yelp.com/developers)
 
 ## Running The Program
 1. Place API keys in the [KEYS.YAML](keys.yaml)
