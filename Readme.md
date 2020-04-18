@@ -6,7 +6,7 @@
 * [google maps](https://pypi.org/project/googlemaps/)
 * [PYYAML](https://pypi.org/project/PyYAML/)
 * [pandas](https://pypi.org/project/pandas/)
-
+* [Requests](https://pypi.org/project/requests/)
 ### API Keys Needed
 * [Google Maps Places](https://developers.google.com/places/web-service/get-api-key)
 * [YELP](https://www.yelp.com/developers)
