@@ -42,7 +42,7 @@ def getYelpInfo(yelpPhone):
     #payload = {"term": term, "location": location}
     print("Searching Yelp for phone#:")
     print(payload["phone"])
-    head = {"Authorization": yelpKey}
+    head = {"Authorization": "Bearer " + yelpKey}
     response = requests.get(
         "https://api.yelp.com/v3/businesses/search/phone", params=payload, headers=head)
     rjson = response.json()
