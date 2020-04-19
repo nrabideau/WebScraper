@@ -119,6 +119,7 @@ def importCSV(filename):
             df["Lat/Long"] = ""
             df["Phone"] = ""
             df["Website"] = ""
+            df["Verified"] = ""
             df.to_csv(filename, index=False)
 
         for row in csv_reader:
@@ -311,15 +312,23 @@ def createmaplistCSV(businessName, location, mapsTemp, df, line_count):
                 if (yelpReturn):
                     print("Yelp data matches Google maps\n")
                     mapsTemp.append("true")
+                    df.loc[df['id'] == line_count, ['Verified']
+                           ] = "True"
 
                 else:
                     mapsTemp.append("false")
                     print("no match ON YELP")
+                    df.loc[df['id'] == line_count, ['Verified']
+                           ] = "False"
             else:
                 mapsTemp.append("false")
                 print("no match ON YELP")
+                df.loc[df['id'] == line_count, ['Verified']
+                       ] = "False"
         else:
             print("no match ON YELP")
+            df.loc[df['id'] == line_count, ['Verified']
+                   ] = "False"
 
         # Properly format the Array into a CSV type.
         for i in range(len(mapsTemp)):
