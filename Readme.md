@@ -18,4 +18,6 @@
 3. Click begin to start scraping the data!
 
 ## Output
-Coming Soon...
+* Output will be in the Crunchbaseview.CSV file, all extra information will be shown here
+* Extra Fields: Address, Lat/LONG, Phone, Website, Verified
+* Verified shows if Google maps Matches YELP data, if yelp data does not match/exist value will be false
