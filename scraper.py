@@ -14,7 +14,6 @@ filename = ''
 
 
 def main():
-    createtempFile()
     # Name of origional CSV file that will be fed in.
     createGUI()
     # Initializaion Functions
@@ -22,16 +21,11 @@ def main():
         showError()
         return 0
 
-    deletetempFiles()
-
     if (testAPI("largo", "Taco Bell", "9999999999")):  # Testing APIs, info can be whatever
 
-        initMapListCSV()
-        initMissingEntriesCSV()
-    # Main working function
+        # Main working function
         importCSV(filename)
     # Place Functions for more scrape data below...
-        cleanup()
     else:
         return 0
 # Function that creates our temp file Directory, that will be used to merge with main CSV file.
@@ -58,9 +52,9 @@ def createGUI():
     button.pack(side=tk.LEFT)
 
     guifilename = tk.Button(frame,
-                         text="Select Input File",
-                         command=getFilename
-                         )
+                            text="Select Input File",
+                            command=getFilename
+                            )
     guifilename.pack(side=tk.LEFT)
 
     start = tk.Button(frame,
@@ -69,11 +63,7 @@ def createGUI():
                       )
     start.pack(side=tk.LEFT)
 
-  
-
     root.mainloop()
-
-    
 
 
 def getFilename():
@@ -82,28 +72,8 @@ def getFilename():
     ), title="Select file", filetypes=(("CSV files", "*.csv"), ("all files", "*.*")))
 
 
-def createtempFile():
-    path = os.getcwd()
-    print(path)
-    try:
-        os.mkdir(path + "/tempoutputCSV")
-    except OSError:
-        print("Creation of the directory %s exists" % path)
-    else:
-        print("Successfully created the directory %s " % path)
-
-# Call this function to get the path of the temp folder.
-
-
-def getCSVfolderPath():
-    return (os.getcwd() + "/tempoutputCSV/")
-
-
 def importCSV(filename):
     # Arrays to populate the temp files
-    names = []
-    missingTemp = []
-    mapsTemp = []
 
     print("WORKING....")
     with open(filename) as csv_file:
@@ -133,13 +103,12 @@ def importCSV(filename):
 
         for row in csv_reader:
             line_count += 1
-            missingTemp.clear()
             # We need row[7] AKA company name and row[11] AKA location
-            checkDate(names, mapsTemp, missingTemp, filename, row, df, line_count,
+            checkDate(filename, row, df, line_count,
                       NULL_count)
 
 
-def checkDate(names, mapsTemp, missingTemp, filename, row, df, line_count, NULL_count):
+def checkDate(filename, row, df, line_count, NULL_count):
 
     # current date in MM-DD-YYYY format
     scanTime = datetime.date.today()
@@ -166,26 +135,12 @@ def checkDate(names, mapsTemp, missingTemp, filename, row, df, line_count, NULL_
 
     # if 'updated_at' is blank or is over 30 days old
     if(row[2] == "" or (lastUpdate > datetime.timedelta(days=30))):
-        createmaplistCSV(row[7], row[11], mapsTemp, df, line_count)
+        createmaplistCSV(row[7], row[11],  df, line_count)
 
         df.loc[df['id'] == line_count, ['updated_at']
                ] = scanTime.strftime('%m/%d/%Y')
 
         df.to_csv(filename, index=False)
-
-        if "" in row:
-            # Put into seperate function task.
-            # Location of row where business name is, we can change later to make this dynamic
-            businessName = row[7]
-            location = row[11]  # Where the business is located.
-            # This loop creates a log of all the missing values we can find later
-            for i in range(13, 25):
-                if row[i] == "":
-                    NULL_count += 1
-                    missingTemp.append(names[i])
-                    if i == 24:
-                        createmissingCSV(
-                            businessName, location, missingTemp)
 
     # if 'updated_at' is not blank and is not 30 days old
     elif(row[2] != "" and (lastUpdate < datetime.timedelta(days=30))):
@@ -201,50 +156,6 @@ def getaddressField(companyName, location):
 def getadditionalInfo(ID):
     # Function returns more data based on ID
     return (BusinessMapInfo.getadditionalInfo(ID))
-
-
-def deletetempFiles():
-    # Delete the old text file, so we can create a new one
-    if (path.exists(getCSVfolderPath() + "missingentries.csv")):
-        os.remove(getCSVfolderPath() + "missingentries.csv")
-    if (path.exists(getCSVfolderPath() + "mapdata.csv")):
-        os.remove(getCSVfolderPath() + "mapdata.csv")
-    # if (path.exists(getCSVfolderPath() + "updateLog.csv")):
-    #   os.remove(getCSVfolderPath() + "updateLog.csv")
-
-# Future use CSV for finding missing values using a web scraper.
-
-
-def initMissingEntriesCSV():
-    missingentries = open(getCSVfolderPath() + "missingentries.csv", "a+")
-    missingentries.write(' Name, Location, Missing \n')
-
-# write the missing entries to the file we just created in initMissingEntriesCSV
-
-
-def createmissingCSV(businessName, location, missingTemp):
-    missingentries = open(getCSVfolderPath() + "missingentries.csv", "a+")
-    missingentries.write('"' + businessName + '",' + '"' +
-                         location + '",')  # format proper
-    for i in range(0, len(missingTemp)):
-        missingentries.write('"')
-        missingentries.write(missingTemp[i])
-        missingentries.write('"')
-
-        if i < len(missingTemp) - 1:
-            missingentries.write(',')
-
-    missingentries.write('\n')
-
-
-# Output will be the company and map information. including phone number, website, address.
-# This function creates row 1 header.
-def initMapListCSV():
-    mapdata = open(getCSVfolderPath() + "mapdata.csv", "a+")
-    mapdata.write(
-        'Name, Headquarters, Address, LAT/LONG, Phone, Website, Yelp Match\n')
-
-# Populate the rest of the feilds with location informaion.
 
 
 def testAPI(location, name, phone):
@@ -266,9 +177,7 @@ def testAPI(location, name, phone):
     return True
 
 
-def createmaplistCSV(businessName, location, mapsTemp, df, line_count):
-    mapsTemp.clear()
-    mapdata = open(getCSVfolderPath() + "mapdata.csv", "a+")
+def createmaplistCSV(businessName, location,  df, line_count):
 
     locationData = getaddressField(businessName, location)
 
@@ -287,13 +196,6 @@ def createmaplistCSV(businessName, location, mapsTemp, df, line_count):
         # Any additional info from a maps API call should go here.
 
         print("Found on Google Maps")
-
-        mapsTemp.append(businessName)
-        mapsTemp.append(location)
-        mapsTemp.append(address)
-        mapsTemp.append(geometry)
-        mapsTemp.append(phoneNumber)
-        mapsTemp.append(website)
 
         df.loc[df['id'] == line_count, ['Address']
                ] = address
@@ -325,17 +227,14 @@ def createmaplistCSV(businessName, location, mapsTemp, df, line_count):
 
                 if (yelpReturn):
                     print("Yelp data matches Google maps\n")
-                    mapsTemp.append("true")
                     df.loc[df['id'] == line_count, ['Verified']
                            ] = "True"
 
                 else:
-                    mapsTemp.append("false")
                     print("no match ON YELP")
                     df.loc[df['id'] == line_count, ['Verified']
                            ] = "False"
             else:
-                mapsTemp.append("false")
                 print("no match ON YELP")
                 df.loc[df['id'] == line_count, ['Verified']
                        ] = "False"
@@ -344,21 +243,9 @@ def createmaplistCSV(businessName, location, mapsTemp, df, line_count):
             df.loc[df['id'] == line_count, ['Verified']
                    ] = "False"
 
-        # Properly format the Array into a CSV type.
-        for i in range(len(mapsTemp)):
-            mapdata.write('"')
-            mapdata.write(mapsTemp[i])
-            mapdata.write('"')
-            if i < len(mapsTemp) - 1:
-                mapdata.write(',')
-
-        mapdata.write('\n')
-
     # This means the company was not found
     elif (locationData['status'] == 'ZERO_RESULTS'):
         print("No results on google maps")
-        mapdata.write('"' + businessName + '",' + '"' + location +
-                      '",' + '  \n')  # format proper
 
     else:  # Some kind of other error occured.
         print("GMAP ERROR RETRY...")
@@ -409,11 +296,6 @@ def getWebsite(additionalInfo):
 
     except KeyError:
         return("")
-
-
-def cleanup():
-    print("Search Complete, cleaning up...")
-    # Add Cleanup logic deleting files, ETC...
 
 
 if __name__ == "__main__":
