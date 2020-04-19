@@ -40,8 +40,10 @@ def getYelpInfo(yelpPhone):
     yelpPhone = re.sub('[!(@#$)+ -]', '', yelpPhone)
     payload = {"phone": "+1"+yelpPhone}
     #payload = {"term": term, "location": location}
-    print("Searching Yelp for phone#:")
-    print(payload["phone"])
+    if(payload["phone"] != "+19999999999"):
+        print("Searching Yelp for phone#:")
+        print(payload["phone"])
+
     head = {"Authorization": "Bearer " + yelpKey}
     response = requests.get(
         "https://api.yelp.com/v3/businesses/search/phone", params=payload, headers=head)
