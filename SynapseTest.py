@@ -13,6 +13,7 @@ from tkinter import messagebox
 
 filename = ''
 
+
 def main():
     createtempFile()
     # Name of origional CSV file that will be fed in.
@@ -21,12 +22,11 @@ def main():
     if (filename == ''):
         showError()
         return 0
-     
 
     deletetempFiles()
-    
-    if (testAPI("largo", "Taco Bell", "9999999999")): #Testing APIs, info can be whatever
-        
+
+    if (testAPI("largo", "Taco Bell", "9999999999")):  # Testing APIs, info can be whatever
+
         initMapListCSV()
         initMissingEntriesCSV()
     # Main working function
@@ -37,11 +37,11 @@ def main():
         return 0
 # Function that creates our temp file Directory, that will be used to merge with main CSV file.
 
+
 def showError():
     root = Tk()
     root.withdraw()
     messagebox.showerror("Error", "Before staring parse, select input file...")
-
 
 
 def createGUI():
@@ -50,35 +50,33 @@ def createGUI():
     frame = tk.Frame(root)
     frame.pack()
     root.title("Synapse Data Scraper")
-
-
-    button = tk.Button(frame, 
-                   text="QUIT PROGRAM", 
-                   fg="red",
-                   command=quit)
+    button = tk.Button(frame,
+                       text="QUIT PROGRAM",
+                       fg="red",
+                       command=quit)
     button.pack(side=tk.LEFT)
 
     filename = tk.Button(frame,
-                   text="Select Input File",
-                   command = getFilename
-                   )
+                         text="Select Input File",
+                         command=getFilename
+                         )
     filename.pack(side=tk.LEFT)
 
     start = tk.Button(frame,
-                   text="Start parse",
-                   command = root.destroy
-                   )
+                      text="Start parse",
+                      command=root.destroy
+                      )
     start.pack(side=tk.LEFT)
-
-
 
     root.mainloop()
 
     return filename
 
+
 def getFilename():
     global filename
-    filename = filedialog.askopenfilename(initialdir = os.getcwd(),title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))
+    filename = filedialog.askopenfilename(initialdir=os.getcwd(
+    ), title="Select file", filetypes=(("CSV files", "*.csv"), ("all files", "*.*")))
 
 
 def createtempFile():
@@ -154,7 +152,7 @@ def checkDate(names, mapsTemp, missingTemp, filename, row, df, line_count, NULL_
 
     # if 'updated_at' is blank or is over 30 days old
     if(row[2] == "" or (lastUpdate > datetime.timedelta(days=30))):
-        createmaplistCSV(row[7], row[11], mapsTemp)
+        createmaplistCSV(row[7], row[11], mapsTemp, df, line_count)
 
         df.loc[df['id'] == line_count, ['updated_at']
                ] = scanTime.strftime('%m/%d/%Y')
@@ -249,14 +247,15 @@ def testAPI(location, name, phone):
     except:
         print("YELP API ERROR")
         return False
-    
+
     print("BOTH APIs Valid...")
     return True
 
-def createmaplistCSV(businessName, location, mapsTemp):
+
+def createmaplistCSV(businessName, location, mapsTemp, df, line_count):
     mapsTemp.clear()
     mapdata = open(getCSVfolderPath() + "mapdata.csv", "a+")
-    
+
     locationData = getaddressField(businessName, location)
 
     # API call to google maps, if this check passes means that the company matches.
@@ -282,11 +281,23 @@ def createmaplistCSV(businessName, location, mapsTemp):
         mapsTemp.append(phoneNumber)
         mapsTemp.append(website)
 
+        df.loc[df['id'] == line_count, ['Address']
+               ] = address
+
+        df.loc[df['id'] == line_count, ['Lat/Long']
+               ] = geometry
+
+        df.loc[df['id'] == line_count, ['Phone']
+               ] = phoneNumber
+
+        df.loc[df['id'] == line_count, ['Website']
+               ] = website
+
         if (phoneNumber != 'NULL' or phoneNumber != ""):
-           
+
             yelpResponse = BusinessMapInfo.getYelpInfo(phoneNumber)
-            
-            #If no response with phone number, it will throw a keyerror
+
+            # If no response with phone number, it will throw a keyerror
             try:
                 total = yelpResponse["total"]
             except KeyError:
@@ -294,14 +305,14 @@ def createmaplistCSV(businessName, location, mapsTemp):
 
             if (total > 0):
                 print("Comparing Yelp To GMAPS data")
-                #Check to see if Yelp data matches google maps
+                # Check to see if Yelp data matches google maps
                 yelpReturn = comparison(
                     address, businessName, phoneNumber, yelpResponse)
 
                 if (yelpReturn):
                     print("Yelp data matches Google maps\n")
                     mapsTemp.append("true")
-                 
+
                 else:
                     mapsTemp.append("false")
                     print("no match ON YELP")
@@ -340,8 +351,8 @@ def comparison(Gmaps, googlebusinessName, gmapPhone, yelp):
           (gmapCompanyName, gmapAddress, gmapPhone))
 
     for i in range(0, len(yelp["businesses"])):
-        yelpAddress = str(yelp["businesses"][i]["location"]
-                          ["display_address"])+", United States"
+        yelpAddress = str(yelp["businesses"][i]["location"]["display_address"])
+        yelpAddress += ", United States"
         yelpCompanyName = str(yelp["businesses"][i]["name"])
         yelpPhone = str(yelp["businesses"][i]["phone"])
 
@@ -355,11 +366,11 @@ def comparison(Gmaps, googlebusinessName, gmapPhone, yelp):
         addressScore = SequenceMatcher(a=yelpAddress, b=gmapAddress).ratio()
         nameScore = SequenceMatcher(
             a=yelpCompanyName, b=gmapCompanyName).ratio()
-        if(addressScore >= .75 and nameScore >= .75):
+        if(addressScore >= .75 and nameScore >= .60):
             yelpReturn = [yelpCompanyName, yelpAddress, yelpPhone]
             return yelpReturn
-        
-    return False;
+
+    return False
 
 
 def getPhoneNumber(additionalInfo):
