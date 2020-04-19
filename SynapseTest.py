@@ -10,7 +10,6 @@ import pandas as pd  # Used for csv editing
 from os import path
 from difflib import SequenceMatcher  # to compare strings
 from tkinter import messagebox
-
 filename = ''
 
 
@@ -48,6 +47,8 @@ def createGUI():
 
     root = Tk()
     frame = tk.Frame(root)
+    root.geometry("500x500")
+    pathlabel = Label(root)
     frame.pack()
     root.title("Synapse Data Scraper")
     button = tk.Button(frame,
@@ -56,11 +57,11 @@ def createGUI():
                        command=quit)
     button.pack(side=tk.LEFT)
 
-    filename = tk.Button(frame,
+    guifilename = tk.Button(frame,
                          text="Select Input File",
                          command=getFilename
                          )
-    filename.pack(side=tk.LEFT)
+    guifilename.pack(side=tk.LEFT)
 
     start = tk.Button(frame,
                       text="Start parse",
@@ -68,9 +69,11 @@ def createGUI():
                       )
     start.pack(side=tk.LEFT)
 
+  
+
     root.mainloop()
 
-    return filename
+    
 
 
 def getFilename():
