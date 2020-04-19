@@ -97,9 +97,6 @@ def getCSVfolderPath():
 
 
 def importCSV(filename):
-    """ # Test for GMAPS API key
-    if (createmaplistCSV("test", "test", [])) == 0:
-        return 0 """
     # Arrays to populate the temp files
     names = []
     missingTemp = []
@@ -116,18 +113,20 @@ def importCSV(filename):
 
         # pandas data of the read csv file
         df = pd.read_csv(filename)
+
+        if(len(names) == 26):
+            df["Address"] = ""
+            df["Lat/Long"] = ""
+            df["Phone"] = ""
+            df["Website"] = ""
+            df.to_csv(filename, index=False)
+
         for row in csv_reader:
             line_count += 1
             missingTemp.clear()
             # We need row[7] AKA company name and row[11] AKA location
-            # Reccomend chaning this incase crunchabase pull changes row locations / rows added.
-
             checkDate(names, mapsTemp, missingTemp, filename, row, df, line_count,
                       NULL_count)
-
-        print("There are %d lines in the file" % (line_count))
-        print("There are %d Nulls in the file" % (NULL_count))
-        print("File Created")
 
 
 def checkDate(names, mapsTemp, missingTemp, filename, row, df, line_count, NULL_count):
@@ -347,7 +346,7 @@ def comparison(Gmaps, googlebusinessName, gmapPhone, yelp):
     gmapAddress = Gmaps  # str(Gmaps['candidates'][0]['formatted_address'])
     gmapCompanyName = str(googlebusinessName)
 
-    print("Comparing against %s, %s, %s\n" %
+    print("Comparing against %s, %s, %s" %
           (gmapCompanyName, gmapAddress, gmapPhone))
 
     for i in range(0, len(yelp["businesses"])):
