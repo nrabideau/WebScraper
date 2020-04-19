@@ -115,9 +115,15 @@ def importCSV(filename):
         names = csv_reader.__next__()
 
         # pandas data of the read csv file
-        df = pd.read_csv(filename)
+        df = pd.read_csv(filename, error_bad_lines=False)
 
-        if(len(names) == 26):
+        if(len(df.columns) == 27):
+            df.drop(df.columns[len(df.columns)-1], axis=1, inplace=True)
+            df.to_csv(filename, index=False)
+
+        df = pd.read_csv(filename, error_bad_lines=False)
+
+        if(len(df.columns) == 26):
             df["Address"] = ""
             df["Lat/Long"] = ""
             df["Phone"] = ""
@@ -152,7 +158,9 @@ def checkDate(names, mapsTemp, missingTemp, filename, row, df, line_count, NULL_
         try:
             oldTime = datetime.datetime.strptime(row[2], '%m/%d/%Y').date()
         except:
-            oldTime = "00/00/0000"
+            oldTime = "01/01/2020"
+            oldTime = datetime.datetime.strptime(oldTime, '%m/%d/%Y').date()
+
         # todays date - last scan date
         lastUpdate = scanTime-oldTime
 
