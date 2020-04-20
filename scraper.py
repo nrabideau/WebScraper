@@ -1,16 +1,24 @@
 import csv
 import os
 import os.path
-import BusinessMapInfo
 import datetime
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import *
-import pandas as pd  # Used for csv editing
 from os import path
 from difflib import SequenceMatcher  # to compare strings
 from tkinter import messagebox
 filename = ''
+
+try:
+    import BusinessMapInfo
+    import pandas as pd  # Used for csv editing
+
+except ModuleNotFoundError:
+    print("Installing missing modules")
+    os.system("pip install googlemaps pandas pyyaml requests")
+    import BusinessMapInfo
+    import pandas as pd  # Used for csv editing
 
 
 def main():
@@ -77,8 +85,6 @@ def importCSV(filename):
 
     print("WORKING....")
     with open(filename) as csv_file:
-        line_count = 0
-        NULL_count = 0
         csv_reader = csv.reader(csv_file, delimiter=',', skipinitialspace=True)
 
         # Get titles of the rows.
@@ -101,50 +107,66 @@ def importCSV(filename):
             df["Verified"] = ""
             df.to_csv(filename, index=False)
 
-        for row in csv_reader:
-            line_count += 1
-            # We need row[7] AKA company name and row[11] AKA location
-            checkDate(filename, row, df, line_count,
-                      NULL_count)
+        checkDate(filename, df)
 
 
-def checkDate(filename, row, df, line_count, NULL_count):
+def checkDate(filename, df):
 
     # current date in MM-DD-YYYY format
     scanTime = datetime.date.today()
+    line_count = 1
 
-    # sets crated_at with current date if this is the first scan
-    if row[1] == "":
-        print("\nFirst time scanning %s, scan on %s: " %
-              (str(row[7]), str(scanTime.strftime('%m/%d/%Y'))))
+    for row in df.itertuples(index=True, name='Pandas'):
+        # sets crated_at with current date if this is the first scan
+        if isinstance(getattr(row, "created_at"), str) == False:
+            print("\nFirst time scanning %s, scan on %s: " %
+                  (getattr(row, "name"), str(scanTime.strftime('%m/%d/%Y'))))
 
-        df.loc[df['id'] == line_count, ['created_at']
-               ] = scanTime.strftime('%m/%d/%Y')
+            df.loc[df['id'] == line_count, ['created_at']
+                   ] = scanTime.strftime('%m/%d/%Y')
 
-    # if 'updated_at' is not blank
-    if row[2] != "":
-        # last time this company was scanned
-        try:
-            oldTime = datetime.datetime.strptime(row[2], '%m/%d/%Y').date()
-        except:
-            oldTime = "01/01/2020"
-            oldTime = datetime.datetime.strptime(oldTime, '%m/%d/%Y').date()
+            df.loc[df['id'] == line_count, ['updated_at']
+                   ] = scanTime.strftime('%m/%d/%Y')
 
-        # todays date - last scan date
-        lastUpdate = scanTime-oldTime
+            try:
+                createmaplistCSV(row,  df, line_count)
 
-    # if 'updated_at' is blank or is over 30 days old
-    if(row[2] == "" or (lastUpdate > datetime.timedelta(days=30))):
-        createmaplistCSV(row[7], row[11],  df, line_count)
+            except:
+                print("error scanning company")
 
-        df.loc[df['id'] == line_count, ['updated_at']
-               ] = scanTime.strftime('%m/%d/%Y')
+        # if 'updated_at' is not blank
+        else:
+            # last time this company was scanned
+            try:
+                oldTime = datetime.datetime.strptime(
+                    getattr(row, "updated_at"), '%m/%d/%Y').date()
+            except:
+                oldTime = "01/01/2020"
+                oldTime = datetime.datetime.strptime(
+                    oldTime, '%m/%d/%Y').date()
 
+            # todays date - last scan date
+            lastUpdate = scanTime-oldTime
+
+            # if 'updated_at' is not blank and is not 30 days old
+            if lastUpdate < datetime.timedelta(days=30):
+                print("Skipping " + getattr(row, "name") +
+                      ", last updated on " + getattr(row, "updated_at"))
+
+            # if 'updated_at' is blank or is over 30 days old
+            elif lastUpdate > datetime.timedelta(days=30):
+                print("\nUpdating scan of " + getattr(row, "name"))
+                df.loc[df['id'] == line_count, ['updated_at']
+                       ] = scanTime.strftime('%m/%d/%Y')
+
+                try:
+                    createmaplistCSV(row,  df, line_count)
+
+                except:
+                    print("error scanning company")
+
+        line_count += 1
         df.to_csv(filename, index=False)
-
-    # if 'updated_at' is not blank and is not 30 days old
-    elif(row[2] != "" and (lastUpdate < datetime.timedelta(days=30))):
-        print("Skipping " + row[7] + ", last updated on " + row[2])
 
 
 def getaddressField(companyName, location):
@@ -177,7 +199,9 @@ def testAPI(location, name, phone):
     return True
 
 
-def createmaplistCSV(businessName, location,  df, line_count):
+def createmaplistCSV(row,  df, line_count):
+    businessName = str(getattr(row, "name"))
+    location = str(getattr(row, "headquarters_location"))
 
     locationData = getaddressField(businessName, location)
 
@@ -229,26 +253,34 @@ def createmaplistCSV(businessName, location,  df, line_count):
                     print("Yelp data matches Google maps\n")
                     df.loc[df['id'] == line_count, ['Verified']
                            ] = "True"
+                    return
 
                 else:
                     print("no match ON YELP")
                     df.loc[df['id'] == line_count, ['Verified']
                            ] = "False"
+                    return
+
             else:
                 print("no match ON YELP")
                 df.loc[df['id'] == line_count, ['Verified']
                        ] = "False"
+                return
+
         else:
             print("no match ON YELP")
             df.loc[df['id'] == line_count, ['Verified']
                    ] = "False"
+            return
 
     # This means the company was not found
     elif (locationData['status'] == 'ZERO_RESULTS'):
         print("No results on google maps")
+        return
 
     else:  # Some kind of other error occured.
         print("GMAP ERROR RETRY...")
+        return
 
 
 def comparison(Gmaps, googlebusinessName, gmapPhone, yelp):
