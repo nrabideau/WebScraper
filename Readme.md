@@ -1,5 +1,6 @@
 # Syanpse Connect Program 
-![Synapse](https://github.com/Web-Cam/WebScraper/blob/master/synapse.jpg)
+<img src="https://github.com/Web-Cam/WebScraper/blob/master/synapse.jpg" alt="synapse" width="100" height="100">
+
 ## Installation
 
 ### Prerequsite Downloads
